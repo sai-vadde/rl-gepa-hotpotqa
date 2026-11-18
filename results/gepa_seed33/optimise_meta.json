@@ -1,0 +1,26 @@
+{
+  "optimise_sec": 1180.688354253769,
+  "metric_calls_counted": 988,
+  "metric_calls_reported": 901,
+  "task_lm": {
+    "calls": 1855,
+    "prompt_tokens": 2375215,
+    "completion_tokens": 39863
+  },
+  "reflection_lm": {
+    "calls": 29,
+    "prompt_tokens": 103353,
+    "completion_tokens": 7172
+  },
+  "budget": 900,
+  "seed": 33,
+  "env": {
+    "python": "3.12.10",
+    "dspy": "3.5.0",
+    "litellm": "1.77.7",
+    "model": "qwen3:4b-instruct-2507",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "time": "2026-11-17 03:12:15"
+  },
+  "note": "if this run was resumed, counts cover only the final process"
+}

@@ -1,0 +1,53 @@
+[
+ {
+  "tag": "baseline",
+  "method": "Baseline",
+  "n_test": 200,
+  "answer_f1": 0.6588932456432457,
+  "f1_lo": 0.6048223443223444,
+  "f1_hi": 0.7149711954711955,
+  "em": 0.495,
+  "sp_f1": 0.7014650072150072,
+  "failures": 0,
+  "opt_metric_calls": 0,
+  "opt_minutes": 0.0,
+  "opt_model_calls": 0,
+  "opt_tokens": 0,
+  "test_sec_per_rollout": 1.20065,
+  "test_tokens_per_q": 2381.58
+ },
+ {
+  "tag": "mipro",
+  "method": "MIPROv2 light",
+  "n_test": 200,
+  "answer_f1": 0.7031379870129871,
+  "f1_lo": 0.6471344905094906,
+  "f1_hi": 0.7584633838383839,
+  "em": 0.58,
+  "sp_f1": 0.6324541847041847,
+  "failures": 0,
+  "opt_metric_calls": 1208,
+  "opt_minutes": 27.269688181082408,
+  "opt_model_calls": 2424,
+  "opt_tokens": 5394957,
+  "test_sec_per_rollout": 1.23865,
+  "test_tokens_per_q": 2759.15
+ },
+ {
+  "tag": "gepa_seed11",
+  "method": "GEPA (seed 11)",
+  "n_test": 200,
+  "answer_f1": 0.7243413808413809,
+  "f1_lo": 0.671745892995893,
+  "f1_hi": 0.7804000721500722,
+  "em": 0.605,
+  "sp_f1": 0.6953340548340549,
+  "failures": 0,
+  "opt_metric_calls": 956,
+  "opt_minutes": 20.63068633476893,
+  "opt_model_calls": 1958,
+  "opt_tokens": 2571261,
+  "test_sec_per_rollout": 1.1375,
+  "test_tokens_per_q": 2518.91
+ }
+]

@@ -1,0 +1,21 @@
+2026-11-17T00:54:39 START split
+2026-11-17T00:54:40 END split exit=0 minutes=0
+2026-11-17T00:54:40 START baseline
+2026-11-17T00:58:45 END baseline exit=0 minutes=4.1
+2026-11-17T00:58:45 START mipro
+2026-11-17T01:00:13 END mipro exit=1 minutes=1.5
+2026-11-17T01:00:52 START split
+2026-11-17T01:00:53 END split exit=0 minutes=0
+2026-11-17T01:00:53 START baseline
+2026-11-17T01:00:59 END baseline exit=0 minutes=0.1
+2026-11-17T01:00:59 START mipro
+2026-11-17T01:32:28 END mipro exit=0 minutes=31.5
+2026-11-17T01:32:28 START gepa_seed11
+2026-11-17T01:57:00 END gepa_seed11 exit=0 minutes=24.5
+2026-11-17T01:57:00 START grpo
+2026-11-17T02:14:43 END grpo exit=0 minutes=17.7
+2026-11-17T02:14:43 START tables
+2026-11-17T02:14:47 END tables exit=0 minutes=0.1
+2026-11-17T02:16:15 START grpo (attempt 2, enable_thinking=False)
+2026-11-17T02:21:47 END grpo attempt 2 exit=0
+2026-11-17T02:21:50 END tables exit=0

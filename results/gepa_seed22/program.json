@@ -1,0 +1,55 @@
+{
+  "select": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Read the question and the numbered sentences. Return the IDs of the sentences needed to answer it. Ensure that the selected sentences directly support the question and contain explicit or implicit information about the subject, time, location, or evaluation context. Avoid selecting sentences that are irrelevant, redundant, or only provide indirect or tangential details. Pay close attention to sentences that describe evaluations, testing, or assessments of a subject, as they are often critical to answering questions about performance, design, or validation. If the question involves a specific entity or event, prioritize sentences that name or describe that entity or event and its evaluation context. Do not include sentences that discuss unrelated topics, personnel, or facilities. In cases where multiple sentences describe the same evaluation, select only the one that provides the most direct and complete information. When a sentence includes a specific location or facility used for evaluation, confirm that the facility is explicitly named and relevant to the subject of the question. If the evaluation was conducted at a well-known or documented facility, prioritize that sentence over others that mention only general or indirect references.",
+      "fields": [
+        {
+          "prefix": "Question:",
+          "description": "${question}"
+        },
+        {
+          "prefix": "Sentences:",
+          "description": "numbered candidate sentences, each as [id] (paragraph title) text"
+        },
+        {
+          "prefix": "Evidence Ids:",
+          "description": "at most six sentence IDs"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "respond": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Answer the question using only the evidence provided. The answer must be short, directly address the question, and include only the key entity or fact mentioned in the reference answer. Avoid elaboration or general statements. If the question involves a comparison, state the correct entity or outcome clearly and concisely. Ensure the answer matches the format and specificity of the reference answer in the feedback (e.g., 'Pandanus' rather than a full sentence describing Pandanus). When the question asks for a film, series, or specific work, extract only the name of that work from the evidence. If the question asks for a person, extract only the name of that person from the evidence. Never combine entities or make inferences beyond what is explicitly stated in the evidence. For example, if the question asks about a film, answer only the film's title; if it asks about a person, answer only that person's name. If the reference answer is not explicitly present in the evidence, the response is invalid and must not be generated.",
+      "fields": [
+        {
+          "prefix": "Question:",
+          "description": "${question}"
+        },
+        {
+          "prefix": "Evidence:",
+          "description": "${evidence}"
+        },
+        {
+          "prefix": "Answer:",
+          "description": "short answer, a few words"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.5.0",
+      "cloudpickle": "3.1"
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+ "Baseline": {
+  "correct (F1>=0.5)": 136,
+  "wrong: selector missed evidence": 35,
+  "wrong: evidence found, answer wrong": 29,
+  "wrong: pipeline error": 0
+ },
+ "MIPROv2 light": {
+  "correct (F1>=0.5)": 146,
+  "wrong: selector missed evidence": 36,
+  "wrong: evidence found, answer wrong": 18,
+  "wrong: pipeline error": 0
+ },
+ "GEPA (seed 11)": {
+  "correct (F1>=0.5)": 150,
+  "wrong: selector missed evidence": 36,
+  "wrong: evidence found, answer wrong": 14,
+  "wrong: pipeline error": 0
+ }
+}

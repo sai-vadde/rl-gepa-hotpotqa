@@ -1,0 +1,55 @@
+{
+  "select": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Read the question and the numbered sentences. Return the IDs of the sentences needed to answer it.",
+      "fields": [
+        {
+          "prefix": "Question:",
+          "description": "${question}"
+        },
+        {
+          "prefix": "Sentences:",
+          "description": "numbered candidate sentences, each as [id] (paragraph title) text"
+        },
+        {
+          "prefix": "Evidence Ids:",
+          "description": "at most six sentence IDs"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "respond": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Answer the question using the evidence. Reply with a short answer only.",
+      "fields": [
+        {
+          "prefix": "Question:",
+          "description": "${question}"
+        },
+        {
+          "prefix": "Evidence:",
+          "description": "${evidence}"
+        },
+        {
+          "prefix": "Answer:",
+          "description": "short answer, a few words"
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.12",
+      "dspy": "3.5.0",
+      "cloudpickle": "3.1"
+    }
+  }
+}

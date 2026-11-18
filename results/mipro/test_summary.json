@@ -1,0 +1,25 @@
+{
+  "n": 200,
+  "answer_f1": 0.7031379870129871,
+  "exact_match": 0.58,
+  "sp_f1": 0.6324541847041847,
+  "failures": 0,
+  "mean_sec_per_rollout": 1.23865,
+  "model_calls": 400,
+  "prompt_tokens": 541022,
+  "completion_tokens": 10808,
+  "failures_total_counter": {
+    "select_error": 0,
+    "answer_error": 0
+  },
+  "optimise_calls": 1208,
+  "optimise_sec": 1636.1812908649445,
+  "env": {
+    "python": "3.12.10",
+    "dspy": "3.5.0",
+    "litellm": "1.77.7",
+    "model": "qwen3:4b-instruct-2507",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "time": "2026-11-17 01:32:27"
+  }
+}

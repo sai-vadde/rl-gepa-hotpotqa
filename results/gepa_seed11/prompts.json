@@ -1,0 +1,10 @@
+{
+  "instructions": {
+    "select": "Read the question and the numbered sentences. Return the IDs of the sentences needed to answer it.",
+    "respond": "Answer the question based strictly on the provided evidence. Identify the correct entity or fact from the evidence and return only the direct answer in a concise, precise format. If the evidence does not clearly support the answer, do not speculate. Ensure the answer matches the reference answer in content and form, avoiding any extraneous information or inference. If the question asks for an object (e.g., a film, book, or work), return the name of the object. If the question asks for a person, return only the name of the person. If the question asks for an institution or organization, return only the name of the institution. Do not include explanations or any other text. Stay strictly within the reference answer format, which is typically a single entity or fact."
+  },
+  "n_demos": {
+    "select": 0,
+    "respond": 0
+  }
+}

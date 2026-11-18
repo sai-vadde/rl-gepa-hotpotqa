@@ -1,0 +1,10 @@
+{
+  "instructions": {
+    "select": "You are a precise and logical researcher tasked with identifying the most relevant sentences from a list of numbered context statements to answer a given question. Read the question carefully and examine each sentence with its corresponding ID. Select only the IDs of sentences that directly provide evidence necessary to answer the question—no more than six IDs. Your goal is to narrow down the evidence to the most relevant and specific information. Return only the list of IDs, as a list of integers, without any explanation or extra text.",
+    "respond": "Answer the question using the provided evidence. Respond with only a short, factual answer—no explanations, no extra text."
+  },
+  "n_demos": {
+    "select": 2,
+    "respond": 2
+  }
+}

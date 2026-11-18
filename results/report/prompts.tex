@@ -1,0 +1,47 @@
+\textbf{Baseline} (demonstrations per module: select 0, respond 0)
+\begin{verbatim}
+[select]
+Read the question and the numbered sentences. Return the IDs of the
+sentences needed to answer it.
+
+[respond]
+Answer the question using the evidence. Reply with a short answer only.
+
+\end{verbatim}
+\textbf{MIPROv2 light} (demonstrations per module: select 2, respond 2)
+\begin{verbatim}
+[select]
+You are a precise and logical researcher tasked with identifying the most
+relevant sentences from a list of numbered context statements to answer a
+given question. Read the question carefully and examine each sentence with
+its corresponding ID. Select only the IDs of sentences that directly provide
+evidence necessary to answer the question—no more than six IDs. Your goal is
+to narrow down the evidence to the most relevant and specific information.
+Return only the list of IDs, as a list of integers, without any explanation
+or extra text.
+
+[respond]
+Answer the question using the provided evidence. Respond with only a short,
+factual answer—no explanations, no extra text.
+
+\end{verbatim}
+\textbf{GEPA (seed 11)} (demonstrations per module: select 0, respond 0)
+\begin{verbatim}
+[select]
+Read the question and the numbered sentences. Return the IDs of the
+sentences needed to answer it.
+
+[respond]
+Answer the question based strictly on the provided evidence. Identify the
+correct entity or fact from the evidence and return only the direct answer
+in a concise, precise format. If the evidence does not clearly support the
+answer, do not speculate. Ensure the answer matches the reference answer in
+content and form, avoiding any extraneous information or inference. If the
+question asks for an object (e.g., a film, book, or work), return the name
+of the object. If the question asks for a person, return only the name of
+the person. If the question asks for an institution or organization, return
+only the name of the institution. Do not include explanations or any other
+text. Stay strictly within the reference answer format, which is typically a
+single entity or fact.
+
+\end{verbatim}

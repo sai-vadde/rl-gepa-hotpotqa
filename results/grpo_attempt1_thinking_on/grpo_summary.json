@@ -1,0 +1,16 @@
+{
+  "model": "Qwen/Qwen3-0.6B",
+  "steps": 200,
+  "cuda": true,
+  "start": {
+    "n": 200,
+    "answer_f1": 0.46135777528858024,
+    "exact_match": 0.32
+  },
+  "train_sec": 409.99773025512695,
+  "trained": {
+    "n": 200,
+    "answer_f1": 0.46135777528858024,
+    "exact_match": 0.32
+  }
+}

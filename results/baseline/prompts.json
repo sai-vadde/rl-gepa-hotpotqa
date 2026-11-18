@@ -1,0 +1,10 @@
+{
+  "instructions": {
+    "select": "Read the question and the numbered sentences. Return the IDs of the sentences needed to answer it.",
+    "respond": "Answer the question using the evidence. Reply with a short answer only."
+  },
+  "n_demos": {
+    "select": 0,
+    "respond": 0
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "instructions": {
+    "select": "Read the question and the numbered sentences. Return the IDs of the sentences needed to answer it. The question may refer to a person, event, or concept. Identify which sentences provide direct, relevant, and sufficient information to answer the question. Include only sentences that contain explicit, factual details directly tied to the question. If the question refers to a specific award, ensure the sentence states the award's origin year or the year it was first given. If the question refers to a person, ensure the sentence contains their birth, association, or relevant activity. Avoid selecting sentences that are tangential, general, or about unrelated entities. The response must contain only the IDs of the sentences that are necessary to answer the question and must not include any extraneous or redundant information. If multiple sentences are needed, list them in the order they appear in the input, separated by commas. If only one sentence is sufficient, list just its ID. Never include sentences that refer to people or events not directly relevant to the question or that are mentioned in a different context or without clear connection to the query.",
+    "respond": "Answer the question using the evidence provided. Your response must be a short, precise answer that directly matches the reference answer in the evidence. Avoid adding extra explanation or commentary. If the evidence specifies a name, title, or fact, reproduce it exactly as it appears in the reference. Ensure the answer is concise and in the same style as the original reference answer."
+  },
+  "n_demos": {
+    "select": 0,
+    "respond": 0
+  }
+}

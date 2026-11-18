@@ -1,0 +1,221 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{array}
+\usepackage[hidelinks]{hyperref}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{4pt}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.12}
+\setlength{\emergencystretch}{2em}
+
+\title{\Large\bfseries Proposal for Model and Datase<path>
+Small-Scale Question Answering with GEPA}
+\author{Vadde Sai Hrushikesh\\USN: 24BTTCL002\\
+B.Tech CSE (AI and ML), Section D, Semester V\\
+Jain (Deemed-to-be University), Bangalore\\
+\textit{Course: Reinforcement Learning}}
+\date{12 November 2026}
+
+\begin{document}
+\maketitle
+\vspace{-1.4em}
+\begin{center}
+\small\textit{The experiments below are proposed work.}
+\end{center}
+
+\begin{abstract}
+I picked this project because a wrong answer alone doesn't tell me what went wrong. I want to test whether GEPA's written feedback helps a small model choose evidence and answer questions that need more than one passage. I'll keep the weights fixed. My two DSPy modules will use quantised Qwen3-4B through Ollama, with HotpotQA as the main dataset and HoVer optional. I'll compare GEPA and MIPROv2 against my starting prompt, using a fixed GEPA metric-call budget and a light MIPROv2 search. Better answers are only part of the test: I'll also measure evidence selection and inference cost to see whether the gains justify the extra runs on hardware available to me.
+\end{abstract}
+
+\section{Introduction and motivation}
+What should I change when a model gives a wrong answer? The score won't tell me. It might have chosen the wrong passage, missed the connection between two facts, or added unnecessary words after finding the answer. I picked this problem because those failures seem different enough to need different feedback. Can written comments about the mistake help more than a score alone?
+
+GRPO changes model parameters using rewards~\cite{grpo}. That means training infrastructure and generated examples, which is more than I want to take on for the main experiment. Prompts are easier for me to inspect. I can leave the weights alone and read what changed, although writing new instructions and trying them still costs inference time. So I'll count system executions when comparing improvements, rather than treating a better score as enough by itself. A longer prompt needs to justify its cost.
+
+\section{Background on the allocated paper}
+The paper I was allocated is by Agrawal et al., at ICLR 2026~\cite{gepa}. GEPA is their name for Genetic-Pareto. They treat an AI application as a program made of language model modules, each with its own instructions. That fits what I want to try. With DSPy, I describe what goes into a module and what should come out~\cite{dspy}. I can then check evidence selection on its own, even though I'll use the same model to write the answer.
+
+\newpage
+This is my reading of what happens during a GEPA run.
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\item First, I need a run of the starting program. Its saved trace tells me what
+went into each module, what came out, and how that run was evaluated.
+\item For the chosen candidate, I'd pass a few training cases to the reflection
+model. They don't all have to be failures. A successful case can be used too.
+The model reads the traces with their written feedback and proposes a new
+instruction for just one module.
+\item I wouldn't move straight to the selection set with that new instruction.
+It has to do better on the same small batch first. If it does, GEPA scores the
+candidate on the selection set and saves which earlier candidate it came from.
+\item Pick the next parent. GEPA collects every candidate that has the best
+score on at least one selection example, drops the ones that are dominated, and
+samples from the rest. A candidate that leads on more examples gets picked more
+often. So the program with the best average is not always the next parent. This
+is its Pareto-based selection step.
+\item Repeat until the budget is used up, then return the program with the
+highest mean selection score. An optional system-aware merge can combine better
+module prompts from compatible branches that share an ancestor. The merged
+program needs its own evaluation because combining the changes can fail.
+\end{enumerate}
+
+The six main benchmarks in the paper are HotpotQA, HoVer, IFBench, PUPA, AIME-2025, and LiveBench-Math. IFBench checks instruction constraints~\cite{ifbench}. PUPA checks answering while limiting exposure of private information~\cite{pupa}. The main runs use Qwen3-8B and GPT-4.1 Mini; the authors also test kernel generation on NPUEval and KernelBench, along with adversarial prompt search.
+
+Table 1 reports 42.33 for the Qwen3-8B HotpotQA baseline, compared with 43.33 for GRPO, 55.33 for MIPROv2, and 62.33 for GEPA. Its total rollout budget is 6,871 for GEPA (with merge) and 24,000 for GRPO~\cite{gepa}. The abstract reports a 6 percentage point average gain over GRPO across six tasks, with up to 35 times fewer rollouts~\cite{gepa}. These are the authors' results. I'm testing whether the method helps under tighter resource limits, so matching those scores isn't my expectation.
+
+\section{Problem statement and objectives}
+I have a limited number of evaluations to spend. Within that fixed budget, can I use feedback to change the instructions and get better answers from the evidence? That's the question I want to test. These are my four objectives.
+\begin{enumerate}
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\item I'll build two modules. I want to be able to read the evidence choices and the answers separately.
+\item Test GEPA and MIPROv2 against the unchanged starting prompt using identical inputs.
+\item Record answer quality together with rollout count, token use, and elapsed time.
+\item Read the failures and distinguish a selector mistake from an answering mistake.
+\end{enumerate}
+
+\section{Proposed model}
+I'll use quantised Qwen3-4B~\cite{qwen} with frozen weights, called from DSPy and served by Ollama locally~\cite{ollama}. My MacBook Air has 8 GB RAM. Ollama already has \texttt{qwen3:4b} and \texttt{qwen3:1.7b} installed, but the paper's Qwen3-8B leaves too little of my 8 GB RAM for context and the operating system. That is why I picked 4B. The same model will write instructions and act as GEPA's reflection model (a possible weakness, since it has to diagnose its own failures). The main run is free and local. If it's too slow on my Mac, I'll move to free Google Colab with a T4 and 16 GB GPU memory.
+
+I'll start with short instructions of my own. HotpotQA supplies the paragraphs with each question, so I don't need to build retrieval for this experiment.
+
+\begin{center}
+\small
+\begin{tabular}{|p{0.19\linewidth}|p{0.72\linewidth}|}
+\hline
+Stage & Input and output \\ \hline
+Module 1: select & Read the question or claim and numbered candidate sentences
+$\rightarrow$ return at most six sentence IDs. \\ \hline
+Fixed lookup & Fetch the original sentences for valid IDs. Reject invented IDs. \\ \hline
+Module 2: respond & Read the question or claim with the selected evidence
+$\rightarrow$ return a short answer or a HoVer verification label. \\ \hline
+Evaluator & Score the outputs against hidden reference annotations. Save scores
+and give diagnostic feedback only for training examples. \\ \hline
+\end{tabular}
+\end{center}
+
+GEPA will alternate between revising the two modules' instructions, while MIPROv2 searches over instructions and a few demonstrations from training data~\cite{mipro}. Both will get the same architecture, input limits and model. Merge stays out of the main GEPA run to keep the comparison small. If time remains, I'll try HoVer separately with prompts that return verification labels. That part is optional.
+
+\section{Proposed dataset}
+\textbf{Primary dataset, HotpotQA.} The distractor setting of HotpotQA~\cite{hotpot} gives me something I need for debugging: supporting-sentence annotations, so I can see what evidence the selector missed. The authors provide it on their website.\footnote{HotpotQA release, format, and licence are at
+\url{http<path>
+The standard release has 90,447 training records and 7,405 development records. Each question comes with an answer and paragraph titles, with sentence lists and supporting-fact annotations attached. Normally there are ten candidate paragraphs. Some are irrelevant, so receiving the context doesn't remove the selector's job.
+
+\textbf{Optional secondary dataset, HoVer.} HoVer provides claims with support labels and supporting-sentence references~\cite{hover}. It has 18,171 training claims and 4,000 development claims. I'll use it only if time allows. Its two-hop claims can be linked to HotpotQA through \texttt{hpqa\_id}, which lets me reuse the matched question's candidate paragraphs instead of adding retrieval.
+
+A match alone isn't enough. I'll accept a claim only when the match is available and every referenced evidence sentence occurs in that context; I'll report excluded counts beside the final subset sizes. This keeps the verification check manageable, but it differs from the paper's HoVer task, which uses open-domain retrieval. Both dataset websites list CC BY-SA 4.0 for the data. I'll retain the attribution and licence notices.\footnote{HoVer's release and data
+licence are at \url{http<path> Its repository uses an MIT
+licence for the software.}
+
+\begin{center}
+\small
+\begin{tabular}{lrrr>{\raggedright\arraybackslash}p{0.37\linewidth}}
+\hline
+Dataset & Train & Validation & Test & Origin of project subsets \\ \hline
+HotpotQA & 100 & 100 & 200 & Draw train/validation from official train;
+test from official development. \\
+HoVer (optional) & 60 & 20 & 60 & Follow the same split policy, balancing the two labels. \\ \hline
+\end{tabular}
+\end{center}
+
+I won't use the official hidden tests. These are local subsets, sampled with seed 42 and saved IDs, with each source \texttt{hpqa\_id} restricted to one subset across both datasets because HoVer reuses HotpotQA questions. Otherwise the same source question could cross the split. I'll remove exact duplicate inputs too.
+
+Paragraph titles and sentence boundaries will stay in the prepared data. I'll assign stable sentence IDs and normalise whitespace, then exclude inputs longer than 6,000 context tokens before sampling and record how many were excluded, while the evaluator keeps the reference answers, labels and supporting-fact flags so that none of them enters the model input. References stay with the evaluator. Only training references can enter feedback or demonstrations.
+
+\section{Methodology and experimental setup}
+\textbf{Budget and comparisons.} My comparisons are the unoptimised two-module program, MIPROv2 in light mode, and GEPA through \texttt{dspy.GEPA}. I'll count a rollout as one whole-pipeline execution on an example followed by scoring, usually requiring two model calls; a metric call scores that execution. GEPA gets 900 metric calls per run through \texttt{max\_metric\_calls=900}, within the planned 800--1,000 range. I'll log the actual optimiser count. If its final batch crosses the limit, I'll record that too, while reflection calls get a separate log.
+
+Seed 11 is the optimisation run I have to finish. I'll add seeds 22 and 33 if I have time. The data won't be redrawn for those runs or for another method. I'll use the partitions already sampled with seed 42. After freezing the prompts, I'll give each required system the same 200 test questions. I need to allow for those 600 extra pipeline executions separately from the optimisation budget.
+
+\textbf{Settings.} For GEPA, I'll take three training examples at a time for reflection. The modules take turns being updated, round-robin. Instance-wise Pareto selection will use the 100 validation examples. For MIPROv2 I'll use \texttt{auto="light"}. Each module can have up to two bootstrapped demonstrations and two labelled ones. I'll use Qwen3-4B for both the task and writing instructions. I can't fix the search size myself in light mode, since it chooses that size. I can still record how many metric calls it used and how long it took, then put that cost beside its answer scores.
+
+My Mac only has 8 GB RAM, so I'll try a short pilot on training cases before the full run. I need to see the memory use and elapsed time for myself. I'll start at an 8,192-token context limit and run one example at a time, with thinking off. For sampling I'll copy the Qwen settings in the paper, nucleus probability $p=0.95$, top-$k$ of 20 and temperature 0.6~\cite{gepa}. I'll cap generated output at 256 tokens per module and 1,024 tokens for instruction proposals. If I move to Colab after the pilot, all three required systems will move there. They'll use the same 4B model and serving settings. I don't want a hardware change to affect just one of them. I'll keep the model identifiers and software versions with the saved prompts and resource logs.
+
+\textbf{Optional RL stretch baseline.} If the main runs finish in time, I'll try Hugging Face TRL's GRPO trainer~\cite{trl} with LoRA on Qwen3-0.6B using a free Colab T4, but I'll treat it as a separate exercise because its smaller answer model prevents a direct comparison with the main prompt experiments. I'll aim for 200 training steps on the same 100 training questions, using answer F1 as the reward, but freeze the baseline selector and train only the answer model on the sentences it selects. A small generation group and short outputs should keep memory use down. I'll also evaluate the starting 0.6B answer model to give the trained version a matching reference. Its model size differs from the main experiment. I'll report scores only if training and test evaluation finish; otherwise, the paper's GRPO numbers stay as cited background. My experiment table will contain only scores backed by my saved predictions.
+
+\textbf{Metrics and feedback.} HotpotQA answer token F1 will drive prompt optimisation. I'll also report exact match using the dataset evaluator's normalisation, which removes articles and punctuation and ignores case. For HoVer, if I run it, I'll score accuracy over \texttt{SUPPORTED} and \texttt{NOT\_SUPPORTED}. Supporting-fact F1 will be a secondary measure of the selector. Invalid IDs get dropped and logged. An answer I can't parse gets zero task score; if a repair call is made, I'll record its model-call cost and count the scored retry against the metric budget.
+
+For a training case, I'll return a numeric task score and a short annotation-based message that points to missing evidence IDs or irrelevant selections, or explains an answer mismatch or format error. The message should be concrete. For example, it might say that the selector missed evidence about the second entity in the question. GEPA's reflection model will read it beside the relevant module input and output records. Validation scores are only for selection: I'll keep validation instance text and reference feedback away from the instruction proposer so that revisions come from training cases, even if a validation failure would make a tempting example to show the reflection model. Test records won't change any prompt.
+
+\section{Evaluation plan, expected outcomes, and limitations}
+I'll put test answer F1 and exact match (EM) in the results table for each method, alongside supporting-fact F1 and measured cost, so I can judge an improvement against what it took to get there. The search logs will give me validation F1 against metric calls for a plot. Seed 11 is required. If all three seeds finish, I'll report their individual scores with the mean and range; if they don't, I'll say which runs finished and explain the single-seed limit.
+
+Once I have the final scores, I'll go back through 20 test errors. Did the model miss the evidence? Did it have the evidence but reason wrongly? I'll also check for answers that failed because of their format.
+
+My expectation is that GEPA will beat the unoptimised baseline on test F1, since feedback about missing evidence could help the selector find both facts needed for an answer. That's still a hypothesis. I don't expect the paper's absolute scores from a 4B model. And I don't know whether GEPA will beat MIPROv2: the starting prompt might leave little room for improvement, or the revisions might fail to help at all. I'll examine those failures too.
+
+The validation sets worry me. With so few examples, a prompt may score well simply because it fits that particular subset, while the small test sets won't support broad claims that one method is better. Quantisation could restrict what the model can do. So could short outputs and a weak reflection model. I also can't rule out the public datasets having appeared in pretraining.
+
+Supplied passages leave retrieval out of the experiment, which means the results describe only part of answering questions over Wikipedia. I'll keep the paper's published scores in a separate background table with their citation. Part C is due on 18 November 2026. If optional runs are unfinished then, I'll mark them unfinished rather than fill the gaps with expected results, because every result I present needs to come from implementation and experiments even when a run fails or shows no improvement.
+
+\newpage
+\section{Timeline}
+I've dated Part A 12 November 2026. That leaves me six days for Parts B
+and C, with Part C due on 18 November 2026. This is how I plan to use them.
+\begin{center}
+\begin{tabular}{lp{0.72\linewidth}}
+\hline
+Date in 2026 & Planned work and deliverable \\ \hline
+13 November & Set up DSPy and Ollama, prepare the fixed data splits, and run a speed pilot. \\
+14 November & Build and score the baseline, then run MIPROv2 in light mode. \\
+15 November & Start the required GEPA run and save its prompts and logs. \\
+16 November & Finish GEPA and check validation logs. Start optional GRPO or extra seeds if time allows. \\
+17 November & Finish any optional runs, freeze prompts, score the test set, and draft tables and graphs. \\
+18 November & Finish results tables, graphs, error analysis, and the final report for submission. \\ \hline
+\end{tabular}
+\end{center}
+
+\begin{thebibliography}{11}
+\small
+\setlength{\itemsep}{2pt}
+\bibitem{gepa} L. A. Agrawal et al.
+\textit{GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning}.
+ICLR, 2026. Allocated paper.
+
+\bibitem{dspy} O. Khattab et al.
+\textit{DSPy: Compiling Declarative Language Model Calls into State-of-the-Art
+Pipelines}. ICLR, 2024.
+
+\bibitem{mipro} K. Opsahl-Ong, M. J. Ryan, J. Purtell, D. Broman, C. Potts,
+M. Zaharia, and O. Khattab.
+\textit{Optimizing Instructions and Demonstrations for Multi-Stage Language
+Model Programs}. EMNLP, pp. 9340--9366, 2024.
+doi:10.18653/v1/2024.emnlp-main.525.
+
+\bibitem{grpo} Z. Shao et al.
+\textit{DeepSeekMath: Pushing the Limits of Mathematical Reasoning in Open
+Language Models}. arXiv:2402.03300, 2024.
+
+\bibitem{hotpot} Z. Yang, P. Qi, S. Zhang, Y. Bengio, W. W. Cohen,
+R. Salakhutdinov, and C. D. Manning.
+\textit{HotpotQA: A Dataset for Diverse, Explainable Multi-hop Question Answering}.
+EMNLP, 2018.
+
+\bibitem{hover} Y. Jiang, S. Bordia, Z. Zhong, C. Dognin, M. Singh, and M. Bansal.
+\textit{HoVer: A Dataset for Many-Hop Fact Extraction and Claim Verification}.
+Findings of EMNLP, pp. 3441--3460, 2020.
+doi:10.18653/v1/2020.findings-emnlp.309.
+
+\bibitem{ifbench} V. Pyatkin, S. Malik, V. Graf, H. Ivison, S. Huang,
+P. Dasigi, N. Lambert, and H. Hajishirzi.
+\textit{Generalizing Verifiable Instruction Following}. arXiv:2507.02833, 2025.
+
+\bibitem{pupa} S. Li, V. C. Raghuram, O. Khattab, J. Hirschberg, and Z. Yu.
+\textit{PAPILLON: Privacy Preservation from Internet-Based and Local Language
+Model Ensembles}. NAACL-HLT, Vol. 1, pp. 3371--3390, 2025.
+doi:10.18653/v1/2025.naacl-long.173.
+
+\bibitem{qwen} Qwen Team.
+\textit{Qwen3 Technical Report}. arXiv:2505.09388, 2025.
+\url{http<path>
+
+\bibitem{trl} L. von Werra et al.
+\textit{TRL: Transformer Reinforcement Learning}. GitHub, 2020.
+\url{http<path>
+
+\bibitem{ollama} Ollama.
+\textit{Ollama}. Software. \url{http<path>
+\end{thebibliography}
+\end{document}
